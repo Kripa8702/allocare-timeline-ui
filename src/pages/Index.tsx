@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import TopBar from "../components/TopBar";
 import TimelineHeader from "../components/TimelineHeader";
@@ -11,8 +10,11 @@ const Index = () => {
   const [showFilters, setShowFilters] = useState(false);
   
   const employees = generateMockEmployees();
+  
+  // Filter employees based on search query
   const filteredEmployees = employees.filter(employee => 
-    employee.name.toLowerCase().includes(searchQuery.toLowerCase())
+    employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    employee.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -27,8 +29,10 @@ const Index = () => {
       />
       <div className="flex-1 p-4 overflow-auto">
         <div className="bg-white rounded-md shadow-sm">
-          <TimelineHeader weeks={weekDates} />
-          <AllocationTable employees={filteredEmployees} weeks={weekDates} />
+          <AllocationTable 
+            employees={filteredEmployees} 
+            weeks={weekDates} 
+          />
         </div>
       </div>
     </div>

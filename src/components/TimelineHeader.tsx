@@ -1,5 +1,7 @@
 
 import { format, isThisWeek } from "date-fns";
+import { TableRow } from "./ui/table";
+import { TableCell } from "./ui/table";
 
 interface TimelineHeaderProps {
   weeks: Date[][];
@@ -7,34 +9,24 @@ interface TimelineHeaderProps {
 
 const TimelineHeader = ({ weeks }: TimelineHeaderProps) => {
   return (
-    <div className="flex border-b border-gray-200">
-      {/* Empty cell for employee names */}
-      <div className="w-[140px] min-w-[140px] bg-white border-l border-t border-gray-200 p-2">
-        <h3 className="text-sm font-semibold text-gray-700">Team Members</h3>
-      </div>
-      
-      {/* Week headers */}
-      <div className="flex flex-grow">
-        {weeks.map((week, index) => {
-          const isCurrentWeek = isThisWeek(week[0]);
-          return (
-            <div 
-              key={index} 
-              className={`flex-1 text-center p-2 border-t border-r border-gray-200 ${
-                isCurrentWeek ? "bg-blue-50" : "bg-white"
-              }`}
-            >
-              <div className="text-xs font-semibold text-gray-700">
-                Week {index + 1}
-              </div>
-              <div className="text-xs text-gray-500">
-                {format(week[0], "d MMM")}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <TableRow className="border-b border-gray-200">
+      <TableCell className="sticky left-0 z-10 bg-white p-4 border border-gray-200 w-[250px] min-w-[140px]">
+        <h3 className="text-sm font-bold text-gray-700">Resources</h3>
+      </TableCell>
+      {weeks.map((week, index) => (
+        <TableCell
+          key={index}
+          className="text-center p-2 border border-gray-200"
+        >
+          <div className="text-base font-bold text-gray-700">
+            {format(week[0], "d MMM")}
+          </div>
+          <div className="text-xs text-gray-500">
+            Week {index + 1}
+          </div>
+        </TableCell>
+      ))}
+    </TableRow>
   );
 };
 
