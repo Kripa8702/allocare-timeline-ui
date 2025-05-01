@@ -26,8 +26,10 @@ const Index = () => {
         setShowFilters={setShowFilters}
       />
       <div className="flex-1 p-4 overflow-auto">
-        <TimelineHeader weeks={weekDates} />
-        <AllocationTable employees={filteredEmployees} weeks={weekDates} />
+        <div className="bg-white rounded-md shadow-sm">
+          <TimelineHeader weeks={weekDates} />
+          <AllocationTable employees={filteredEmployees} weeks={weekDates} />
+        </div>
       </div>
     </div>
   );
