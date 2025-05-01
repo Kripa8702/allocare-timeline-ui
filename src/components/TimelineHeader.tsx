@@ -9,8 +9,8 @@ const TimelineHeader = ({ weeks }: TimelineHeaderProps) => {
   return (
     <div className="flex border-b border-gray-200">
       {/* Empty cell for employee names */}
-      <div className="w-[160px] min-w-[160px] bg-white border-l border-t border-gray-200 p-2">
-        <h3 className="text-sm font-medium text-gray-700">Team Members</h3>
+      <div className="w-[140px] min-w-[140px] bg-white border-l border-t border-gray-200 p-2">
+        <h3 className="text-sm font-semibold text-gray-700">Team Members</h3>
       </div>
       
       {/* Week headers */}
@@ -24,7 +24,7 @@ const TimelineHeader = ({ weeks }: TimelineHeaderProps) => {
                 isCurrentWeek ? "bg-blue-50" : "bg-white"
               }`}
             >
-              <div className="text-xs font-medium text-gray-700">
+              <div className="text-xs font-semibold text-gray-700">
                 Week {index + 1}
               </div>
               <div className="text-xs text-gray-500">

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { isThisWeek } from "date-fns";
-import { Employee, WeekAllocation } from "../utils/mockData";
+import { Employee } from "../utils/mockData";
 import { 
   Table,
   TableBody,
@@ -9,7 +9,6 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 
 interface AllocationTableProps {
   employees: Employee[];
@@ -22,8 +21,8 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
       <Table className="border-collapse w-full">
         <TableBody>
           {employees.map((employee, employeeIndex) => {
-            const rowHeight = 36; // Fixed height for employee row
-            const projectRowHeight = 32; // Smaller height for project rows
+            const rowHeight = 32; // Reduced height for employee row
+            const projectRowHeight = 28; // Smaller height for project rows
             
             return (
               <React.Fragment key={employee.id}>
@@ -31,11 +30,11 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                 <TableRow className={`border-t ${employeeIndex > 0 ? "border-t-2 border-gray-300" : "border-gray-200"}`}>
                   {/* Employee name cell */}
                   <TableCell 
-                    className="w-[160px] min-w-[160px] bg-white border-l border-gray-200 p-2"
+                    className="w-[140px] min-w-[140px] bg-white border-l border-gray-200 p-2"
                     style={{ height: `${rowHeight}px` }}
                   >
                     <div>
-                      <h3 className="font-medium text-gray-900">{employee.name}</h3>
+                      <h3 className="text-sm font-medium text-gray-900">{employee.name}</h3>
                       <p className="text-xs text-gray-500">{employee.role}</p>
                     </div>
                   </TableCell>
@@ -56,17 +55,17 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                       >
                         {allocation && (
                           <div className="flex flex-col items-center">
-                            <Badge variant={allocation.percentage > 100 ? "destructive" : "outline"} 
-                                  className={`text-xs font-medium ${allocation.percentage > 100 ? "bg-red-100" : "bg-gray-100"} rounded-md px-2 py-1`}>
-                              {allocation.percentage}%
-                            </Badge>
-                            <span className="text-xs text-gray-500 mt-1">
-                              {allocation.hours}h
-                            </span>
-                            <Progress 
-                              value={Math.min(allocation.percentage, 100)} 
-                              className={`h-1 w-16 mt-1 ${allocation.percentage > 100 ? "bg-red-200" : "bg-blue-200"}`}
-                            />
+                            <div className="flex items-center justify-center space-x-1">
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs font-medium px-1.5 py-0.5 ${getAllocationColorClass(allocation.percentage)}`}
+                              >
+                                {allocation.percentage}%
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                {allocation.hours}h
+                              </span>
+                            </div>
                           </div>
                         )}
                       </TableCell>
@@ -79,7 +78,7 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                   <TableRow key={`${employee.id}-${project.id}`} className="border-gray-200">
                     {/* Project name cell */}
                     <TableCell 
-                      className="w-[160px] min-w-[160px] bg-white border-l border-gray-200 pl-6 py-1"
+                      className="w-[140px] min-w-[140px] bg-white border-l border-gray-200 pl-6 py-1"
                       style={{ height: `${projectRowHeight}px` }}
                     >
                       <span className="text-sm font-medium">{project.name}</span>
@@ -98,7 +97,7 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                           }`}
                         >
                           {isProjectActive && (
-                            <div className={`rounded-md px-2 py-1 text-xs font-medium ${getProjectColor(project.name)}`}>
+                            <div className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${getProjectColor(project.name)}`}>
                               {project.percentage}%
                             </div>
                           )}
@@ -115,6 +114,17 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
     </div>
   );
 };
+
+// Helper function to get color based on allocation percentage
+function getAllocationColorClass(percentage: number): string {
+  if (percentage === 100) {
+    return "bg-green-500 text-white border-green-600"; // Bright green for 100%
+  } else if (percentage > 100) {
+    return "bg-red-500 text-white border-red-600"; // Bright red for >100%
+  } else {
+    return "bg-yellow-400 text-gray-800 border-yellow-500"; // Bright yellow for <100%
+  }
+}
 
 // Helper function to get color based on project name
 function getProjectColor(projectName: string): string {
