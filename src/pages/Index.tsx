@@ -1,11 +1,33 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import TopBar from "../components/TopBar";
+import TimelineHeader from "../components/TimelineHeader";
+import AllocationTable from "../components/AllocationTable";
+import { weekDates, generateMockEmployees } from "../utils/mockData";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState<"Employee" | "Project">("Employee");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  
+  const employees = generateMockEmployees();
+  const filteredEmployees = employees.filter(employee => 
+    employee.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="flex flex-col w-full min-h-screen bg-gray-50">
+      <TopBar 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+      />
+      <div className="flex-1 p-4 overflow-auto">
+        <TimelineHeader weeks={weekDates} />
+        <AllocationTable employees={filteredEmployees} weeks={weekDates} />
       </div>
     </div>
   );
