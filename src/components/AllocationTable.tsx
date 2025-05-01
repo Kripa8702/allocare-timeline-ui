@@ -10,6 +10,9 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 
 interface AllocationTableProps {
   employees: Employee[];
@@ -21,22 +24,32 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
     <div className="overflow-x-auto">
       <Table className="border-collapse">
         <TableBody>
-          {employees.map((employee) => {
-            // Calculate row height based on number of projects plus the allocation row
-            const rowHeight = (employee.projects.length + 1) * 40;
+          {employees.map((employee, employeeIndex) => {
+            // Calculate row height based on number of projects (but with less height)
+            const rowHeight = 40; // Fixed height for employee row
+            const projectRowHeight = 36; // Smaller height for project rows
             
             return (
               <React.Fragment key={employee.id}>
+                {/* Add separator between employees except for the first one */}
+                {employeeIndex > 0 && (
+                  <TableRow>
+                    <TableCell colSpan={weeks.length + 1} className="p-0">
+                      <Separator className="my-2 bg-gray-200" />
+                    </TableCell>
+                  </TableRow>
+                )}
+                
                 {/* Employee row with allocation */}
                 <TableRow className="border-t border-gray-200">
                   {/* Employee name cell */}
                   <TableCell 
-                    className="min-w-[200px] bg-white border-l border-gray-200 p-4"
+                    className="min-w-[200px] bg-white border-l border-gray-200 p-3"
                     style={{ height: `${rowHeight}px` }}
                   >
                     <div>
                       <h3 className="font-medium text-gray-900">{employee.name}</h3>
-                      <p className="text-sm text-gray-500">{employee.role}</p>
+                      <p className="text-xs text-gray-500">{employee.role}</p>
                     </div>
                   </TableCell>
 
@@ -55,10 +68,19 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                         }`}
                       >
                         {allocation && (
-                          <div className="mb-2">
-                            <div className={`text-sm font-medium ${allocation.percentage >= 100 ? "text-red-600" : "text-gray-900"}`}>
-                              {allocation.percentage}% [{allocation.hours}h]
-                            </div>
+                          <div className="flex flex-col items-center">
+                            <Badge variant={allocation.percentage > 100 ? "destructive" : "outline"} 
+                                  className={`text-xs font-medium ${allocation.percentage > 100 ? "bg-red-100" : "bg-gray-100"} rounded-md px-2 py-1`}>
+                              {allocation.percentage}%
+                            </Badge>
+                            <span className="text-xs text-gray-500 mt-1">
+                              {allocation.hours}h
+                            </span>
+                            <Progress 
+                              value={Math.min(allocation.percentage, 100)} 
+                              className="h-1 w-16 mt-1" 
+                              indicatorClassName={allocation.percentage > 100 ? "bg-red-500" : "bg-blue-500"}
+                            />
                           </div>
                         )}
                       </TableCell>
@@ -70,7 +92,10 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                 {employee.projects.map((project) => (
                   <TableRow key={`${employee.id}-${project.id}`} className="border-gray-200">
                     {/* Project name cell */}
-                    <TableCell className="min-w-[200px] bg-white border-l border-gray-200 pl-8 py-2">
+                    <TableCell 
+                      className="min-w-[200px] bg-white border-l border-gray-200 pl-8 py-2"
+                      style={{ height: `${projectRowHeight}px` }}
+                    >
                       <span className="text-sm font-medium">{project.name}</span>
                     </TableCell>
 
@@ -82,7 +107,7 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                       return (
                         <TableCell
                           key={weekIndex}
-                          className={`border-r border-gray-200 p-2 text-center ${
+                          className={`border-r border-gray-200 p-1 text-center ${
                             isCurrentWeek ? "bg-blue-50" : "bg-white"
                           }`}
                         >
