@@ -1,13 +1,12 @@
+
 import React from "react";
-import { isThisWeek, format } from "date-fns";
-import { Employee, Project } from "../utils/mockData";
+import { Employee } from "../utils/mockData";
 import {
   Table,
   TableBody,
   TableCell,
   TableRow
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import ProjectBlock from "./ProjectBlock";
 import TimelineHeader from "./TimelineHeader";
 
@@ -41,11 +40,11 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
           {employees.map((employee) => (
             <React.Fragment key={employee.id}>
               {/* Employee row */}
-              <TableRow className="border-b border-gray-200">
-                <TableCell className="sticky left-0 z-10 bg-white p-4 border border-gray-200 align-top">
+              <TableRow className="border-b border-gray-200 hover:bg-gray-50">
+                <TableCell className="sticky left-0 z-10 bg-white p-4 border border-gray-200 w-[180px]">
                   <div className="flex flex-col">
-                    <span className="font-medium">{employee.name}</span>
-                    <span className="text-sm text-gray-500">{employee.role}</span>
+                    <span className="text-xs font-medium">{employee.name}</span>
+                    <span className="text-xs text-gray-500">{employee.role}</span>
                   </div>
                 </TableCell>
                 {weeks.map((week, weekIndex) => {
@@ -80,28 +79,20 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                       key={weekIndex}
                       className="p-2 border-r border-gray-200 min-w-[200px] align-top"
                     >
-                      <div className="mb-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${getAllocationDotClass(percentage)}`} />
-                            <span className={`text-xs font-medium ${getAllocationTextClass(percentage)}`}>
-                              {status}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getAllocationBadgeClass(percentage)}`}>
-                              {percentage}%
-                            </span>
-                            <span className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">
-                              {hours}h
-                            </span>
-                          </div>
+                      <div className="mb-3 flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${getAllocationDotClass(percentage)}`} />
+                          <span className={`text-xs font-medium ${getAllocationTextClass(percentage)}`}>
+                            {status}
+                          </span>
                         </div>
-                        <div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                          <div 
-                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-300 ${getAllocationBarClass(percentage)}`}
-                            style={{ width: `${Math.min(percentage, 100)}%` }}
-                          />
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getAllocationBadgeClass(percentage)}`}>
+                            {percentage}%
+                          </span>
+                          <span className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">
+                            {hours}h
+                          </span>
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -127,17 +118,6 @@ function getAllocationDotClass(percentage: number): string {
     return "bg-red-500"; // Red dot
   } else {
     return "bg-yellow-500"; // Yellow dot
-  }
-}
-
-// Helper function to get progress bar color based on allocation percentage
-function getAllocationBarClass(percentage: number): string {
-  if (percentage === 100) {
-    return "bg-green-500"; // Green bar
-  } else if (percentage > 100) {
-    return "bg-red-500"; // Red bar
-  } else {
-    return "bg-yellow-500"; // Yellow bar
   }
 }
 
