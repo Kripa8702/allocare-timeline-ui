@@ -12,7 +12,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { theme } from "../utils/theme";
 
 const AppSidebar = () => {
   const menuItems = [
@@ -30,9 +29,9 @@ const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-gray-200 py-3">
+      <SidebarHeader className="border-b border-gray-100 py-3">
         <div className="flex items-center gap-3 px-4">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-purple-100">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-purple-50">
             <Calendar className="w-5 h-5 text-purple-600" />
           </div>
           <div>
@@ -43,7 +42,7 @@ const AppSidebar = () => {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-600">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -55,7 +54,9 @@ const AppSidebar = () => {
                     <NavLink
                       to={item.path}
                       className={({ isActive }) =>
-                        isActive ? "text-purple-600 bg-purple-50" : "text-gray-700"
+                        isActive 
+                          ? "text-purple-600 bg-purple-50 font-medium" 
+                          : "text-gray-700 hover:text-purple-600 hover:bg-purple-50/50"
                       }
                     >
                       <item.icon className="h-5 w-5" />
