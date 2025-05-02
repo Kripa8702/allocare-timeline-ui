@@ -1,16 +1,15 @@
-
-import React, { useState } from "react";
-import { Employee } from "../utils/mockData";
+import React from "react";
+import { isThisWeek, format } from "date-fns";
+import { Employee, Project } from "../utils/mockData";
 import {
   Table,
   TableBody,
   TableCell,
   TableRow
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import ProjectBlock from "./ProjectBlock";
 import TimelineHeader from "./TimelineHeader";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Calendar, CalendarDays, CalendarIcon } from "lucide-react";
 
 // Allocation status enums
 enum AllocationStatus {
@@ -24,18 +23,8 @@ interface AllocationTableProps {
   weeks: Date[][];
 }
 
-// View type for allocation display
-type ViewType = "day" | "week" | "month";
-
 const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
-  const [viewType, setViewType] = useState<ViewType>("week");
-  
-  // Hour limits based on view type
-  const HOURS_PER_VIEW = {
-    day: 8,
-    week: 40,
-    month: 160
-  };
+  const HOURS_PER_WEEK = 40;
 
   const getAllocationStatus = (percentage: number): AllocationStatus => {
     if (percentage === 100) return AllocationStatus.OPTIMAL;
@@ -44,83 +33,55 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-end mb-4">
-        <div className="bg-white p-2 rounded-md shadow-sm border border-gray-100">
-          <ToggleGroup type="single" value={viewType} onValueChange={(value) => value && setViewType(value as ViewType)}>
-            <ToggleGroupItem value="day" aria-label="Day view" className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" /> Day
-            </ToggleGroupItem>
-            <ToggleGroupItem value="week" aria-label="Week view" className="flex items-center gap-1">
-              <CalendarDays className="h-4 w-4" /> Week
-            </ToggleGroupItem>
-            <ToggleGroupItem value="month" aria-label="Month view" className="flex items-center gap-1">
-              <CalendarIcon className="h-4 w-4" /> Month
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-      </div>
-      
-      <div className="overflow-x-auto bg-white rounded-md shadow-sm border border-gray-100">
-        <Table className="border-collapse w-full">
-          <TableBody>
-            {/* Timeline Header */}
-            <TimelineHeader weeks={weeks} viewType={viewType} />
-            {employees.map((employee) => (
-              <React.Fragment key={employee.id}>
-                {/* Employee row */}
-                <TableRow className="border-b border-gray-200 hover:bg-gray-50">
-                  <TableCell className="sticky left-0 z-10 bg-white p-4 border border-gray-200 w-[180px]">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium">{employee.name}</span>
-                      <span className="text-xs text-gray-500">{employee.role}</span>
-                    </div>
-                  </TableCell>
-                  {weeks.map((week, weekIndex) => {
-                    const allocation = employee.allocations.find(
-                      (a) => a.weekIndex === weekIndex
-                    );
-                    
-                    // Adjust percentage and hours based on view type
-                    const maxHours = HOURS_PER_VIEW[viewType];
-                    const baseHours = allocation?.hours || 0;
-                    
-                    // Scale hours appropriately based on the view
-                    let hours = baseHours;
-                    if (viewType === "day") {
-                      hours = baseHours / 5; // Assuming 5 working days in a week
-                    } else if (viewType === "month") {
-                      hours = baseHours * 4; // Assuming 4 weeks in a month
-                    }
-                    
-                    const percentage = Math.round((hours / maxHours) * 100);
-                    const status = getAllocationStatus(percentage);
+    <div className="overflow-x-auto">
+      <Table className="border-collapse w-full">
+        <TableBody>
+          {/* Timeline Header */}
+          <TimelineHeader weeks={weeks} />
+          {employees.map((employee) => (
+            <React.Fragment key={employee.id}>
+              {/* Employee row */}
+              <TableRow className="border-b border-gray-200">
+                <TableCell className="sticky left-0 z-10 bg-white p-4 border border-gray-200 align-top">
+                  <div className="flex flex-col">
+                    <span className="font-medium">{employee.name}</span>
+                    <span className="text-sm text-gray-500">{employee.role}</span>
+                  </div>
+                </TableCell>
+                {weeks.map((week, weekIndex) => {
+                  const allocation = employee.allocations.find(
+                    (a) => a.weekIndex === weekIndex
+                  );
+                  const percentage = allocation?.percentage || 0;
+                  const hours = allocation?.hours || 0;
+                  const status = getAllocationStatus(percentage);
 
-                    // Get all projects for this week/view
-                    const weekProjects = employee.projects.filter((project) => {
-                      const endWeek = project.startWeek + Math.ceil(project.hours / HOURS_PER_VIEW.week) - 1;
-                      return weekIndex >= project.startWeek && weekIndex <= endWeek;
-                    });
+                  // Get all projects for this week
+                  const weekProjects = employee.projects.filter((project) => {
+                    const endWeek = project.startWeek + Math.ceil(project.hours / HOURS_PER_WEEK) - 1;
+                    return weekIndex >= project.startWeek && weekIndex <= endWeek;
+                  });
 
-                    // Create array of project blocks with consistent positioning
-                    const projectBlocks = Array.from({ length: Math.max(...employee.projects.map(p => p.rowIndex)) + 1 }, (_, index) => {
-                      const project = weekProjects.find(p => p.rowIndex === index);
-                      return project ? (
-                        <ProjectBlock
-                          key={project.id}
-                          project={project}
-                          totalWeeks={weeks.length}
-                          weekIndex={weekIndex}
-                        />
-                      ) : <div key={index} className="h-[80px]" />; // Empty space holder with matching height
-                    });
+                  // Create array of project blocks with consistent positioning
+                  const projectBlocks = Array.from({ length: Math.max(...employee.projects.map(p => p.rowIndex)) + 1 }, (_, index) => {
+                    const project = weekProjects.find(p => p.rowIndex === index);
+                    return project ? (
+                      <ProjectBlock
+                        key={project.id}
+                        project={project}
+                        totalWeeks={weeks.length}
+                        weekIndex={weekIndex}
+                      />
+                    ) : <div key={index} className="h-[80px]" />; // Empty space holder with matching height
+                  });
 
-                    return (
-                      <TableCell
-                        key={weekIndex}
-                        className="p-2 border-r border-gray-200 min-w-[200px] align-top"
-                      >
-                        <div className="mb-3 flex justify-between items-center">
+                  return (
+                    <TableCell
+                      key={weekIndex}
+                      className="p-2 border-r border-gray-200 min-w-[200px] align-top"
+                    >
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center space-x-2">
                             <div className={`w-2 h-2 rounded-full ${getAllocationDotClass(percentage)}`} />
                             <span className={`text-xs font-medium ${getAllocationTextClass(percentage)}`}>
@@ -132,34 +93,51 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
                               {percentage}%
                             </span>
                             <span className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">
-                              {Math.round(hours)}h
+                              {hours}h
                             </span>
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          {projectBlocks}
+                        <div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                          <div 
+                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-300 ${getAllocationBarClass(percentage)}`}
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          />
                         </div>
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                      </div>
+                      <div className="space-y-2">
+                        {projectBlocks}
+                      </div>
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            </React.Fragment>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };
 
-// Helper functions for allocation indicators
+// Helper function to get dot color based on allocation percentage
 function getAllocationDotClass(percentage: number): string {
   if (percentage === 100) {
-    return "bg-green-500"; // Bright green dot
+    return "bg-green-500"; // Green dot
   } else if (percentage > 100) {
-    return "bg-red-500"; // Bright red dot
+    return "bg-red-500"; // Red dot
   } else {
-    return "bg-yellow-500"; // Bright yellow dot
+    return "bg-yellow-500"; // Yellow dot
+  }
+}
+
+// Helper function to get progress bar color based on allocation percentage
+function getAllocationBarClass(percentage: number): string {
+  if (percentage === 100) {
+    return "bg-green-500"; // Green bar
+  } else if (percentage > 100) {
+    return "bg-red-500"; // Red bar
+  } else {
+    return "bg-yellow-500"; // Yellow bar
   }
 }
 
@@ -177,11 +155,11 @@ function getAllocationTextClass(percentage: number): string {
 // Helper function to get badge color based on allocation percentage
 function getAllocationBadgeClass(percentage: number): string {
   if (percentage === 100) {
-    return "bg-green-100 text-green-700 border border-green-300"; // Bright green badge
+    return "bg-green-100 text-green-700"; // Green badge
   } else if (percentage > 100) {
-    return "bg-red-100 text-red-700 border border-red-300"; // Bright red badge
+    return "bg-red-100 text-red-700"; // Red badge
   } else {
-    return "bg-yellow-100 text-yellow-700 border border-yellow-300"; // Bright yellow badge
+    return "bg-yellow-100 text-yellow-700"; // Yellow badge
   }
 }
 

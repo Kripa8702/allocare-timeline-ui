@@ -1,6 +1,6 @@
-
 import { useState } from "react";
 import TopBar from "../components/TopBar";
+import TimelineHeader from "../components/TimelineHeader";
 import AllocationTable from "../components/AllocationTable";
 import { weekDates, generateMockEmployees } from "../utils/mockData";
 
@@ -28,10 +28,12 @@ const Index = () => {
         setShowFilters={setShowFilters}
       />
       <div className="flex-1 p-4 overflow-auto">
-        <AllocationTable 
-          employees={filteredEmployees} 
-          weeks={weekDates} 
-        />
+        <div className="bg-white rounded-md shadow-sm">
+          <AllocationTable 
+            employees={filteredEmployees} 
+            weeks={weekDates} 
+          />
+        </div>
       </div>
     </div>
   );
