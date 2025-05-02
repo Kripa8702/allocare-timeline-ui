@@ -28,12 +28,10 @@ const Index = () => {
         setShowFilters={setShowFilters}
       />
       <div className="flex-1 p-4 overflow-auto">
-        <div className="bg-white rounded-md shadow-sm">
-          <AllocationTable 
-            employees={filteredEmployees} 
-            weeks={weekDates} 
-          />
-        </div>
+        <AllocationTable 
+          employees={filteredEmployees} 
+          weeks={weekDates} 
+        />
       </div>
     </div>
   );

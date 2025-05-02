@@ -45,21 +45,23 @@ const AllocationTable = ({ employees, weeks }: AllocationTableProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <ToggleGroup type="single" value={viewType} onValueChange={(value) => value && setViewType(value as ViewType)}>
-          <ToggleGroupItem value="day" aria-label="Day view">
-            <Calendar className="h-4 w-4 mr-1" /> Day
-          </ToggleGroupItem>
-          <ToggleGroupItem value="week" aria-label="Week view">
-            <CalendarDays className="h-4 w-4 mr-1" /> Week
-          </ToggleGroupItem>
-          <ToggleGroupItem value="month" aria-label="Month view">
-            <CalendarIcon className="h-4 w-4 mr-1" /> Month
-          </ToggleGroupItem>
-        </ToggleGroup>
+      <div className="flex justify-end mb-4">
+        <div className="bg-white p-2 rounded-md shadow-sm border border-gray-100">
+          <ToggleGroup type="single" value={viewType} onValueChange={(value) => value && setViewType(value as ViewType)}>
+            <ToggleGroupItem value="day" aria-label="Day view" className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" /> Day
+            </ToggleGroupItem>
+            <ToggleGroupItem value="week" aria-label="Week view" className="flex items-center gap-1">
+              <CalendarDays className="h-4 w-4" /> Week
+            </ToggleGroupItem>
+            <ToggleGroupItem value="month" aria-label="Month view" className="flex items-center gap-1">
+              <CalendarIcon className="h-4 w-4" /> Month
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto bg-white rounded-md shadow-sm border border-gray-100">
         <Table className="border-collapse w-full">
           <TableBody>
             {/* Timeline Header */}
