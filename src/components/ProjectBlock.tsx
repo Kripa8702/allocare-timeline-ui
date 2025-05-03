@@ -1,78 +1,75 @@
-import React from "react";
-import { Project } from "../utils/mockData";
-import { Badge } from "@/components/ui/badge";
-import { theme } from "../utils/theme";
+import React from 'react';
+import { ProjectAllocation } from '../utils/mockData';
+import { format, parseISO, differenceInDays, startOfWeek, endOfWeek } from 'date-fns';
 
 interface ProjectBlockProps {
-  project: Project;
-  totalWeeks: number;
-  weekIndex: number;
+  allocation: ProjectAllocation;
 }
 
-const ProjectBlock = ({ project, totalWeeks, weekIndex }: ProjectBlockProps) => {
-  const HOURS_PER_WEEK = 40;
-  const HOURS_PER_DAY = 8;
-  
-  // Calculate end week and remaining hours
-  const totalWeeksNeeded = project.hours / HOURS_PER_WEEK;
-  const endWeek = project.startWeek + Math.ceil(totalWeeksNeeded) - 1;
-  const isLastWeek = weekIndex === endWeek;
-  const isPartialWeek = totalWeeksNeeded % 1 !== 0;
-  
-  // Calculate hours for the last week if it's partial
-  const lastWeekHours = isPartialWeek ? project.hours % HOURS_PER_WEEK : HOURS_PER_WEEK;
-  const lastWeekPercentage = (lastWeekHours / HOURS_PER_WEEK) * 100;
-  
-  // Calculate width for partial week
-  const width = isLastWeek && isPartialWeek ? `${lastWeekPercentage}%` : '100%';
+const ProjectBlock: React.FC<ProjectBlockProps> = ({ allocation }) => {
+  const startDate = parseISO(allocation.start_date);
+  const weekStart = startOfWeek(startDate, { weekStartsOn: 1 }); // Monday
+  const weekEnd = endOfWeek(startDate, { weekStartsOn: 1 }); // Friday
 
-  // Determine corner rounding
-  const getCornerClasses = () => {
-    if (totalWeeksNeeded <= 1) {
-      return 'rounded-md'; // Single week: rounded on all corners
-    } else if (weekIndex === project.startWeek) {
-      return 'rounded-l-md'; // Start week: rounded on left, sharp on right
-    } else if (weekIndex === endWeek) {
-      return 'rounded-r-md'; // End week: sharp on left, rounded on right
-    }
-    return ''; // Middle weeks: no rounding
-  };
+  // Calculate position and width
+  const daysFromWeekStart = differenceInDays(startDate, weekStart);
+  const daysUntilWeekEnd = differenceInDays(weekEnd, startDate);
+  
+  // Calculate position as percentage from left (0-100%)
+  const leftPosition = (daysFromWeekStart / 4) * 100; // 4 days (Mon-Thu) for full width
+  
+  // Calculate width based on percentage allocation and remaining days
+  const maxWidth = ((daysUntilWeekEnd + 1) / 5) * 100; // Maximum possible width
+  const allocationWidth = (allocation.percent_allocated / 100) * maxWidth; // Width based on allocation percentage
+  
+  // For 50% allocation, ensure it ends exactly at Wednesday (2.5 days) also for other allocations
+  const adjustedWidth = allocation.percent_allocated === 50 
+    ? (2.5 / 5) * 100 
+    : allocationWidth;
+    
+  const width = Math.min(adjustedWidth, 100 - leftPosition); // Ensure it doesn't overflow
 
   return (
     <div 
-      className={`${getProjectColor(project)} ${getCornerClasses()} p-2 h-[80px] flex flex-col justify-between`}
-      style={{ width }}
+      className="relative mb-2 group"
+      style={{
+        marginLeft: `${leftPosition}%`,
+        width: `${width}%`
+      }}
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-sm font-medium">{project.name}</h3>
-          <p className="text-xs text-gray-600 mt-1">
-            {project.hours}h total
-          </p>
-        </div>
-        <Badge variant="outline" className="text-xs">
-          {isLastWeek && isPartialWeek ? `${lastWeekHours}h` : `${HOURS_PER_WEEK}h`}
-        </Badge>
+      <div
+        className={`
+          h-[32px] px-2 py-1
+          hover:opacity-90 transition-colors
+          flex items-center justify-between
+          rounded-md
+        `}
+        style={{
+          backgroundColor: `${allocation.color}20`, // 20 is hex for 12.5% opacity
+          borderLeft: `4px solid ${allocation.color}`
+        }}
+      >
+        <span className="text-sm font-medium text-gray-900 truncate">
+          {allocation.project_name}
+        </span>
+        <span className="text-xs text-gray-600">
+          {allocation.hours_allocated}h
+        </span>
       </div>
-      <div className="mt-2">
-        <div className="text-xs text-gray-600">
-          {isLastWeek && isPartialWeek ? `${lastWeekPercentage.toFixed(0)}%` : '100%'} of week
+
+      {/* Tooltip */}
+      <div className="absolute z-50 hidden group-hover:block bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[200px] -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full">
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">{allocation.project_name}</div>
+          <div className="text-gray-500">
+            <div>Hours: {allocation.hours_allocated}h</div>
+            <div>Allocation: {allocation.percent_allocated}%</div>
+            <div>Start: {allocation.start_date}</div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
-
-// Get project color based on project color in class 
-function getProjectColor(project: Project): string {
-  const style = project.color.split("-");
-  const color = style[1]; // Extract the color name (e.g., "blue", "green", etc.)
-  const shade = style[2]; // Extract the shade (e.g., "800", "600", etc.)
-
-  // Light backgreound color with dark text color and shadow
-  const colorClass = `bg-${color}-100 border border-${color}-${shade} text-${color}-800`;
-
-  return colorClass || "bg-gray-100 border border-gray-300 text-gray-800"; // Default color if not found
-}
 
 export default ProjectBlock; 

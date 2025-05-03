@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -12,13 +11,19 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Users, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, LogOut } from 'lucide-react';
 
 export default function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('isAuthenticated');
+    navigate('/login');
   };
 
   const menuItems = [
@@ -42,10 +47,18 @@ export default function AppSidebar() {
   return (
     <Sidebar variant="sidebar" className="border-r border-gray-200">
       <SidebarHeader className="p-4">
-        <h1 className="text-xl font-bold text-gray-800">Resource Planner</h1>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100">
+            <Calendar className="w-6 h-6 text-purple-600" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-purple-900">Allora</h1>
+            <p className="text-sm text-gray-500">Resource Allocation</p>
+          </div>
+        </div>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className="flex flex-col h-full">
+        <SidebarGroup className="flex-1">
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -63,6 +76,25 @@ export default function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Sign Out Section */}
+        <SidebarGroup className="mt-auto border-t border-gray-200">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleSignOut}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <LogOut className="h-5 w-5" />
+                    <span>Sign out</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

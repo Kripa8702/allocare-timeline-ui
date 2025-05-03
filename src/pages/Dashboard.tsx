@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from "@/components/ui/progress";
+import { mockData, mockEmployees, mockProjects } from '@/utils/mockData';
+import { format, parseISO } from 'date-fns';
 
 // Dashboard stats component
 const StatCard = ({ 
@@ -45,198 +46,139 @@ const StatCard = ({
 );
 
 export default function Dashboard() {
-  // Mock data for the dashboard
+  // Calculate insights from mockData
+  const currentWeek = mockData.weeks[0];
+  const nextWeek = mockData.weeks[1];
+
+  // Calculate total hours allocated across all employees
+  const totalHoursAllocated = currentWeek.data.reduce((sum, emp) => sum + emp.total_allocated_hours, 0);
+  const totalPossibleHours = mockEmployees.length * 40; // 40 hours per week per employee
+  const utilizationRate = (totalHoursAllocated / totalPossibleHours) * 100;
+
+  // Calculate number of active projects
+  const activeProjects = new Set(currentWeek.data.flatMap(emp => 
+    emp.allocations.map(alloc => alloc.project_id)
+  )).size;
+
+  // Calculate number of fully allocated employees
+  const fullyAllocatedEmployees = currentWeek.data.filter(emp => emp.percent_occupied === 100).length;
+
+  // Calculate number of under-allocated employees
+  const underAllocatedEmployees = currentWeek.data.filter(emp => emp.percent_occupied < 100).length;
+
+  // Stats for the dashboard
   const stats = [
-    { title: "Projects", value: 0, total: 1, percentChange: 0, icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> },
-    { title: "Tasks", value: 1, total: 11, percentChange: 0, icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg> },
-    { title: "Resources", value: 1, total: 4, percentChange: 100, icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5 22v-4a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v4"/></svg> },
-    { title: "Time Spent", value: 32, total: "142 hours", percentChange: 100, icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+    { 
+      title: "Active Projects", 
+      value: activeProjects, 
+      total: mockProjects.length, 
+      percentChange: 0,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    },
+    { 
+      title: "Resource Utilization", 
+      value: Math.round(utilizationRate), 
+      total: "100%", 
+      percentChange: 0,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    },
+    { 
+      title: "Fully Allocated", 
+      value: fullyAllocatedEmployees, 
+      total: mockEmployees.length, 
+      percentChange: 0,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5 22v-4a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v4"/></svg>
+    },
+    { 
+      title: "Under Allocated", 
+      value: underAllocatedEmployees, 
+      total: mockEmployees.length, 
+      percentChange: 0,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5 22v-4a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v4"/></svg>
+    },
   ];
 
-  // Mock data for projects
-  const projects = [
-    { name: "Demo Website Design", manager: "N/A", dueDate: "May 10, 2025", status: "On Track", progress: 10 },
-  ];
+  // Get current week's projects with their allocations
+  const currentProjects = currentWeek.data.flatMap(emp => 
+    emp.allocations.map(alloc => ({
+      name: alloc.project_name,
+      manager: emp.employee_name,
+      dueDate: format(parseISO(alloc.start_date), 'MMM d, yyyy'),
+      status: alloc.percent_allocated === 100 ? "Fully Allocated" : "Partially Allocated",
+      progress: alloc.percent_allocated
+    }))
+  );
+
+  // Remove duplicate projects
+  const uniqueProjects = Array.from(new Map(currentProjects.map(p => [p.name, p])).values());
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm">Switch To</span>
-          <button className="text-orange-500 font-medium">Classic Dashboard</button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    <div className="p-6 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            total={stat.total}
-            percentChange={stat.percentChange}
-            icon={stat.icon}
-          />
+          <Card key={index} className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                  <div className="flex items-baseline mt-2">
+                    <p className="text-2xl font-semibold">{stat.value}</p>
+                    <p className="ml-2 text-sm text-gray-500">/ {stat.total}</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-full">
+                  {stat.icon}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      {/* Project Summary and Progress */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Project Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Project</label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="All Project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Project</SelectItem>
-                    </SelectContent>
-                  </Select>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="bg-white">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Current Week's Projects</h3>
+            <div className="space-y-4">
+              {uniqueProjects.map((project, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{project.name}</p>
+                    <p className="text-sm text-gray-500">Manager: {project.manager}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">Due: {project.dueDate}</p>
+                    <p className="text-sm font-medium text-purple-600">{project.status}</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Project Manager</label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="All Project Manager" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Project Manager</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Project Status</label>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="All Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Project Name
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Project Manager
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Due Date
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Progress
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {projects.map((project, index) => (
-                      <tr key={index}>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {project.name}
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {project.manager}
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {project.dueDate}
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm">
-                          <span className="flex items-center">
-                            <span className="h-2 w-2 rounded-full bg-blue-400 mr-2"></span>
-                            <span>{project.status}</span>
-                          </span>
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex items-center">
-                            <Progress value={project.progress} className="w-24 h-2" />
-                            <span className="ml-2 text-xs">{project.progress}%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Overall Progress</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              <div className="relative inline-flex items-center justify-center my-6">
-                <svg className="w-40 h-40">
-                  <circle 
-                    className="text-gray-200" 
-                    strokeWidth="10" 
-                    stroke="currentColor" 
-                    fill="transparent" 
-                    r="70" 
-                    cx="80" 
-                    cy="80" 
-                  />
-                  <circle 
-                    className="text-blue-500" 
-                    strokeWidth="10" 
-                    strokeDasharray="440" 
-                    strokeDashoffset={440} 
-                    strokeLinecap="round" 
-                    stroke="currentColor" 
-                    fill="transparent" 
-                    r="70" 
-                    cx="80" 
-                    cy="80" 
-                  />
-                </svg>
-                <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-4xl font-bold">0%</span>
-                  <span className="text-gray-500 text-sm">Completed</span>
+        <Card className="bg-white">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Resource Allocation Overview</h3>
+            <div className="space-y-4">
+              {currentWeek.data.map((employee) => (
+                <div key={employee.employee_id} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-medium">{employee.employee_name}</p>
+                    <p className="text-sm font-medium text-purple-600">
+                      {employee.percent_occupied}% Allocated
+                    </p>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-purple-600 h-2 rounded-full" 
+                      style={{ width: `${employee.percent_occupied}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4 w-full mt-4 text-center">
-                <div>
-                  <div className="text-xl font-bold text-blue-500">1</div>
-                  <div className="text-xs text-gray-500">Total Projects</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-green-500">0</div>
-                  <div className="text-xs text-gray-500">Completed</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-blue-500">1</div>
-                  <div className="text-xs text-gray-500">On Track</div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="text-xl font-bold text-orange-500">0</div>
-                  <div className="text-xs text-gray-500">At Risk</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
