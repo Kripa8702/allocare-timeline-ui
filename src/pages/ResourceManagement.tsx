@@ -13,7 +13,7 @@ const ResourceManagement = () => {
   // Get current week and future weeks
   const today = new Date();
   const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const futureDate = addWeeks(currentWeekStart, 12); // Show 12 weeks from current week
+  const futureDate = addWeeks(currentWeekStart, 24); // Show 24 weeks from current week
   
   // Generate weeks from current week
   const weeks = [];
@@ -28,12 +28,12 @@ const ResourceManagement = () => {
     if (percentage > 100) return 'bg-red-500';
     if (percentage === 100) return 'bg-green-500';
     if (percentage >= 80) return 'bg-yellow-300';
-    return 'bg-white';
+    return 'bg-blue-200';
   };
 
   const getEmployeeAllocation = (employeeId: number, weekStart: Date) => {
-    const weekString = `${format(weekStart, 'yyyy-MM-dd')} to ${format(addDays(weekStart, 4), 'yyyy-MM-dd')}`;
-    const weekData = mockData.weeks.find(week => week.week === weekString);
+    const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+    const weekData = mockData.weeks.find(week => week.week.startsWith(weekStartStr));
     if (!weekData) return { percentage: 0, hours: 0 };
 
     const employeeData = weekData.data.find(emp => emp.employee_id === employeeId);
@@ -48,15 +48,15 @@ const ResourceManagement = () => {
       <Card className="bg-white">
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold mb-6">
-            Resource Allocation Heat Map - Next 12 Weeks
+            Resource Allocation Heat Map - Next 24 Weeks
           </h2>
           
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse table-fixed">
               <colgroup>
-                <col className="w-32" />
+                <col className="w-40" />
                 {weeks.map((_, index) => (
-                  <col key={index} className="w-10" />
+                  <col key={index} className="w-8" />
                 ))}
               </colgroup>
               <thead>
@@ -107,7 +107,7 @@ const ResourceManagement = () => {
           </div>
 
           {/* Legend */}
-          <div className="mt-6 flex items-center gap-4 flex-wrap">
+          <div className="mt-6 flex flex-wrap gap-4 items-center">
             <div className="text-xs font-medium">Allocation Level:</div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-green-500"></div>
@@ -118,7 +118,7 @@ const ResourceManagement = () => {
               <span className="text-xs">80-99% Allocated</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-white border border-gray-200"></div>
+              <div className="w-4 h-4 bg-blue-200"></div>
               <span className="text-xs">Under 80%</span>
             </div>
             <div className="flex items-center gap-2">

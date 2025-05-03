@@ -11,30 +11,28 @@ const ProjectBlock: React.FC<ProjectBlockProps> = ({ allocation }) => {
   const weekStart = startOfWeek(startDate, { weekStartsOn: 1 }); // Monday
   const weekEnd = endOfWeek(startDate, { weekStartsOn: 1 }); // Friday
 
+  // Constants for hour widths
+  const HOUR_WIDTH =8; // Each hour is 5px wide
+  const CELL_PADDING = 10; // 8px padding on each side
+  const DAY_WIDTH = 64; // 8 hours * 8px = 64px per day
+
+  // calcular position based on day widths
+
   // Calculate position and width
   const daysFromWeekStart = differenceInDays(startDate, weekStart);
-  const daysUntilWeekEnd = differenceInDays(weekEnd, startDate);
   
-  // Calculate position as percentage from left (0-100%)
-  const leftPosition = (daysFromWeekStart / 4) * 100; // 4 days (Mon-Thu) for full width
+  // Calculate position in pixels (based on days)
+  const leftPosition = daysFromWeekStart *(DAY_WIDTH + CELL_PADDING);
   
-  // Calculate width based on percentage allocation and remaining days
-  const maxWidth = ((daysUntilWeekEnd + 1) / 5) * 100; // Maximum possible width
-  const allocationWidth = (allocation.percent_allocated / 100) * maxWidth; // Width based on allocation percentage
-  
-  // For 50% allocation, ensure it ends exactly at Wednesday (2.5 days) also for other allocations
-  const adjustedWidth = allocation.percent_allocated === 50 
-    ? (2.5 / 5) * 100 
-    : allocationWidth;
-    
-  const width = Math.min(adjustedWidth, 100 - leftPosition); // Ensure it doesn't overflow
+  // Calculate width in pixels (based on hours)
+  const width = allocation.hours_allocated * HOUR_WIDTH;
 
   return (
     <div 
       className="relative mb-2 group"
       style={{
-        marginLeft: `${leftPosition}%`,
-        width: `${width}%`
+        marginLeft: `${leftPosition}px`,
+        width: `${width}px`
       }}
     >
       <div
@@ -45,8 +43,9 @@ const ProjectBlock: React.FC<ProjectBlockProps> = ({ allocation }) => {
           rounded-md
         `}
         style={{
-          backgroundColor: `${allocation.color}20`, // 20 is hex for 12.5% opacity
-          borderLeft: `4px solid ${allocation.color}`
+          backgroundColor: `${allocation.color_code}`, // 20 is hex for 12.5% opacity
+          borderLeft: `4px solid ${allocation.color_code}`,
+          border: `1px solid #e0e0e0`
         }}
       >
         <span className="text-sm font-medium text-gray-900 truncate">

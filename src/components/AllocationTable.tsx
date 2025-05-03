@@ -1,5 +1,5 @@
 import React from 'react';
-import { Employee, Weeks, mockEmployees, mockActualTimeLogs } from '../utils/mockData';
+import { Employee, Weeks, mockEmployees } from '../utils/mockData';
 import ProjectBlock from './ProjectBlock';
 import AllocationStatus from './AllocationStatus';
 import { addDays, startOfWeek, format, parseISO, isWithinInterval } from 'date-fns';
@@ -35,16 +35,7 @@ const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) 
 
   const getWeekData = (weekDates: Date[]) => {
     const weekStart = format(weekDates[0], 'yyyy-MM-dd');
-    const weekEnd = format(weekDates[4], 'yyyy-MM-dd');
-    const weekString = `${weekStart} to ${weekEnd}`;
-    return data.weeks.find(week => week.week === weekString);
-  };
-
-  const getActualWeekData = (weekDates: Date[]) => {
-    const weekStart = format(weekDates[0], 'yyyy-MM-dd');
-    const weekEnd = format(weekDates[4], 'yyyy-MM-dd');
-    const weekString = `${weekStart} to ${weekEnd}`;
-    return mockActualTimeLogs.weeks.find(week => week.week === weekString);
+    return data.weeks.find(week => week.week.startsWith(weekStart));
   };
 
   const handleCellClick = (weekDates: Date[]) => {
@@ -53,25 +44,19 @@ const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) 
     onWeekClick?.(weekStart, weekEnd);
   };
 
-  const calculateActualAllocation = (employeeActualWeekData: any) => {
-    if (!employeeActualWeekData?.allocations) return { percentage: 0, hours: 0 };
+  const calculateActualAllocation = (employeeWeekData: any) => {
+    if (!employeeWeekData?.allocations) return { percentage: 0, hours: 0 };
     
-    const totalPercentage = employeeActualWeekData.allocations.reduce(
-      (sum: number, allocation: any) => sum + (allocation.percent_allocated / 100),
-      0
-    ) * 100;
+    const totalActualHours = employeeWeekData.total_actual_hours || 0;
+    const totalPlannedHours = employeeWeekData.total_allocated_hours || 0;
+    
+    const actualPercentage = totalPlannedHours > 0 
+      ? Math.round((totalActualHours / totalPlannedHours) * 100)
+      : 0;
 
-    const totalHours = employeeActualWeekData.allocations.reduce(
-      (sum: number, allocation: any) => sum + allocation.hours_allocated,
-      0
-    );
-
-    console.log(`Emplyee Name: ${employeeActualWeekData.employee_name}`);
-    console.log(`Total Percentage: ${totalPercentage}`);
-    console.log(`Total Hours: ${totalHours}`);
     return {
-      percentage: Math.round(totalPercentage * 10) / 10, // Round to 1 decimal place
-      hours: totalHours
+      percentage: actualPercentage,
+      hours: totalActualHours
     };
   };
 
@@ -80,11 +65,11 @@ const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) 
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="p-2 border-r border-gray-200 min-w-[200px] align-top">Employee</th>
+            <th className="p-2 border-r border-t border-l border-gray-200 min-w-[200px] align-top">Employee</th>
             {weeks.map((weekDates, weekIndex) => (
               <th 
                 key={weekIndex} 
-                className="p-2 border-r border-gray-200 min-w-[200px] align-top cursor-pointer hover:bg-gray-50"
+                className="p-2 border-r border-t border-gray-200 min-w-[200px] align-top cursor-pointer hover:bg-gray-50"
                 onClick={() => handleCellClick(weekDates)}
               >
                 <div className="font-medium">
@@ -110,15 +95,11 @@ const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) 
 
               {weeks.map((weekDates, weekIndex) => {
                 const weekData = getWeekData(weekDates);
-                const actualWeekData = getActualWeekData(weekDates);
                 const employeeWeekData = weekData?.data.find(
                   (e) => e.employee_id === employee.employee_id
                 );
-                const employeeActualWeekData = actualWeekData?.data.find(
-                  (e) => e.employee_id === employee.employee_id
-                );
 
-                const actualAllocation = calculateActualAllocation(employeeActualWeekData);
+                const actualAllocation = calculateActualAllocation(employeeWeekData);
 
                 return (
                   <td 

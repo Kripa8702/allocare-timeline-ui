@@ -14,36 +14,81 @@ const AllocationStatus: React.FC<AllocationStatusProps> = ({
   actualHours 
 }) => {
   const getStatusColor = (percent: number) => {
-    if (percent >= 90) return 'bg-green-100 text-green-800';
-    if (percent >= 70) return 'bg-blue-100 text-blue-800';
-    if (percent >= 50) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (percent > 100) return 'text-red-600';
+    if (percent >= 95) return 'text-green-600';
+    if (percent >= 70) return 'text-blue-600';
+    if (percent >= 50) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   const getActualStatusColor = (planned: number, actual: number) => {
     const difference = actual - planned;
-    if (Math.abs(difference) <= 5) return 'bg-green-100 text-green-800';
-    if (difference > 5) return 'bg-blue-100 text-blue-800';
-    if (difference < -5) return 'bg-red-100 text-red-800';
-    return 'bg-gray-100 text-gray-800';
+    if (actual > 100) return 'text-red-600';
+    if (Math.abs(difference) <= 10) return 'text-green-600';
+    if (difference > 10) return 'text-blue-600';
+    if (difference < -10) return 'text-red-600';
+    return 'text-gray-600';
+  };
+
+  const getLineColor = (percent: number) => {
+    if (percent > 100) return 'bg-red-500';
+    if (percent >= 95) return 'bg-green-500';
+    if (percent >= 70) return 'bg-blue-500';
+    if (percent >= 50) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  const getActualLineColor = (planned: number, actual: number) => {
+    const difference = actual - planned;
+    if (actual > 100) return 'bg-red-500';
+    if (Math.abs(difference) <= 10) return 'bg-green-500';
+    if (difference > 10) return 'bg-blue-500';
+    if (difference < -10) return 'bg-red-500';
+    return 'bg-gray-500';
   };
 
   return (
-    <div className="flex items-center justify-between text-xs">
-      <div className="flex items-center space-x-2">
-        <span className="text-gray-500">P:</span>
-        <div className={`px-1.5 py-0.5 rounded font-medium ${getStatusColor(percentage)}`}>
-          {percentage}%
+    <div className="space-y-0.5">
+      {/* Planned allocation row */}
+      <div className="flex items-center">
+        <div className="flex items-center space-x-1 min-w-[50px]">
+          <span className="text-gray-500 text-[12px]">P:</span>
+          <span className={`text-[12px] font-bold ${getStatusColor(percentage)}`}>
+            {percentage}%
+          </span>
         </div>
-        <span className="text-gray-400">({totalHours}h)</span>
+        <div className="flex-1 relative h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className={`absolute h-full ${getLineColor(percentage)}`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        <span className="text-gray-400 text-[12px] ml-2">({totalHours}h)</span>
       </div>
+
+      {/* Actual allocation row */}
       {actualPercentage !== undefined && actualHours !== undefined && (
-        <div className="flex items-center space-x-2">
-          <span className="text-gray-500">A:</span>
-          <div className={`px-1.5 py-0.5 rounded font-medium ${getActualStatusColor(percentage, actualPercentage)}`}>
-            {actualPercentage}%
+        <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 min-w-[50px]">
+            <span className="text-gray-500 text-[12px]">A:</span>
+            <span className={`text-[12px] font-bold ${getActualStatusColor(percentage, actualPercentage)}`}>
+              {actualPercentage}%
+            </span>
           </div>
-          <span className="text-gray-400">({actualHours}h)</span>
+          <div className="flex-1 relative h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className={`absolute h-full ${getActualLineColor(percentage, actualPercentage)}`}
+              style={{ width: `${actualPercentage}%` }}
+            />
+            {/* Over-allocation indicator */}
+            {actualPercentage > percentage && (
+              <div 
+                className="absolute h-full w-0.5 bg-white"
+                style={{ left: `${percentage}%` }}
+              />
+            )}
+          </div>
+          <span className="text-gray-400 text-[12px] ml-2">({actualHours}h)</span>
         </div>
       )}
     </div>

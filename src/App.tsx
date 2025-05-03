@@ -9,6 +9,8 @@ import ResourceManagement from "./pages/ResourceManagement";
 import Allocation from "./pages/Allocation";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import { AllocationProvider } from '@/contexts/AllocationContext';
+import Layout from '@/components/Layout';
 
 const queryClient = new QueryClient();
 
@@ -30,23 +32,17 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/resources" element={<ResourceManagement />} />
-            <Route path="/allocation" element={<Allocation />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AllocationProvider>
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/allocation" element={<Allocation />} />
+              <Route path="/resource-management" element={<ResourceManagement />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </AllocationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
