@@ -35,7 +35,16 @@ const App = () => (
       <AllocationProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route
+              path="/login"
+              element={
+                localStorage.getItem('isAuthenticated') === 'true' ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Login />
+                )
+              }
+            />
             <Route
               element={
                 <ProtectedRoute>

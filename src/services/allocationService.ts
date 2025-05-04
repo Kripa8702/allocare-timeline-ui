@@ -1,4 +1,6 @@
-import { format, startOfWeek } from 'date-fns';
+import { format, startOfWeek, addWeeks } from 'date-fns';
+import { Weeks } from '@/utils/mockData';
+import { transformAllocationData } from '@/utils/dataTransformer';
 
 export interface AllocationData {
   weeks: {
@@ -22,16 +24,27 @@ export interface AllocationData {
   }[];
 }
 
-export const fetchAllocations = async (): Promise<AllocationData> => {
+export const fetchAllocations = async (): Promise<Weeks> => {
   const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const endDate = addWeeks(currentWeekStart, 24);
+  const token = localStorage.getItem('token');
+
+  console.log(token);
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch('https://b3ef-103-240-207-253.ngrok-free.app/api/allocations', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify({
-      start_date: format(currentWeekStart, 'yyyy-MM-dd')
+      start_date: format(currentWeekStart, 'yyyy-MM-dd'),
+      end_date: format(endDate, 'yyyy-MM-dd')
     })
   });
 
@@ -39,5 +52,6 @@ export const fetchAllocations = async (): Promise<AllocationData> => {
     throw new Error('Failed to fetch allocation data');
   }
 
-  return response.json();
+  const data = await response.json();
+  return transformAllocationData(data);
 }; 
