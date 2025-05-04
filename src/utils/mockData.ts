@@ -19,6 +19,7 @@ export interface ProjectAllocation {
   actual_hours: number;
   percent_allocated: number;
   start_date: string;
+  end_date?: string;
   color_code: string;
 }
 

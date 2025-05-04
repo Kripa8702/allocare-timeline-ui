@@ -47,7 +47,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!allocationData?.weeks || !allocationData.weeks.length) {
+  if (!allocationData?.weeks || !Array.isArray(allocationData.weeks) || allocationData.weeks.length === 0) {
     return (
       <div className="p-6">
         <Card className="bg-yellow-50 border-yellow-200">
@@ -68,17 +68,36 @@ export default function Dashboard() {
 
   // Calculate insights from API data
   const currentWeek = allocationData.weeks[0];
+  
+  if (!currentWeek?.data || !Array.isArray(currentWeek.data)) {
+    return (
+      <div className="p-6">
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 text-yellow-600">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <p>Invalid data format</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Calculate total hours allocated and actual hours across all employees
-  const totalHoursAllocated = currentWeek.data.reduce((sum, emp) => sum + emp.total_allocated_hours, 0);
-  const totalActualHours = currentWeek.data.reduce((sum, emp) => sum + emp.total_actual_hours, 0);
+  const totalHoursAllocated = currentWeek.data.reduce((sum, emp) => sum + (emp.total_allocated_hours || 0), 0);
+  const totalActualHours = currentWeek.data.reduce((sum, emp) => sum + (emp.total_actual_hours || 0), 0);
   const totalPossibleHours = mockEmployees.length * 40; // 40 hours per week per employee
   const utilizationRate = (totalHoursAllocated / totalPossibleHours) * 100;
   const actualUtilizationRate = (totalActualHours / totalPossibleHours) * 100;
 
   // Calculate number of active projects
   const activeProjects = new Set(currentWeek.data.flatMap(emp => 
-    emp.allocations.map(alloc => alloc.project_id)
+    (emp.allocations || []).map(alloc => alloc.project_id)
   )).size;
 
   // Calculate allocation status distribution
@@ -92,11 +111,11 @@ export default function Dashboard() {
   // Prepare data for employee allocation chart
   const employeeAllocationData = currentWeek.data.map(emp => ({
     name: emp.employee_name,
-    planned: emp.total_allocated_hours,
-    actual: emp.total_actual_hours,
-    plannedPercentage: emp.percent_occupied,
-    actualPercentage: emp.total_allocated_hours > 0 
-      ? Math.round((emp.total_actual_hours / emp.total_allocated_hours) * 100)
+    planned: emp.total_allocated_hours || 0,
+    actual: emp.total_actual_hours || 0,
+    plannedPercentage: emp.percent_occupied || 0,
+    actualPercentage: (emp.total_allocated_hours || 0) > 0 
+      ? Math.round(((emp.total_actual_hours || 0) / (emp.total_allocated_hours || 1)) * 100)
       : 0
   }));
 

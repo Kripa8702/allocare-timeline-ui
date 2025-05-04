@@ -28,14 +28,12 @@ export const fetchAllocations = async (): Promise<Weeks> => {
   const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const endDate = addWeeks(currentWeekStart, 24);
   const token = localStorage.getItem('token');
-
-  console.log(token);
   
   if (!token) {
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch('https://b3ef-103-240-207-253.ngrok-free.app/api/allocations', {
+  const response = await fetch('/api/api/allocations', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
@@ -53,5 +51,6 @@ export const fetchAllocations = async (): Promise<Weeks> => {
   }
 
   const data = await response.json();
+  console.log('Raw API Response:', data);
   return transformAllocationData(data);
 }; 
