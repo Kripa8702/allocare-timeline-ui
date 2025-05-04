@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
+import { fetchLoginDetails } from '@/services/authSerivce';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,23 +11,36 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleLogin = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setError('');
 
-    // Basic validation
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
+      // Basic validation
+      if (!email || !password) {
+        setError('Please enter both email and password');
+        return;
+      }
 
-    // Here you would typically make an API call to authenticate
-    // For demo purposes, we'll just check for a demo email/password
-    if (email === 'demo@allora.com' && password === 'demo123') {
+
+      const response = await fetchLoginDetails({
+        email,
+        password,
+      });
+
+      const data = await response;
+
+      if (data?.success === false) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      console.log('Response:', data);
       localStorage.setItem('isAuthenticated', 'true');
-      navigate('/');
-    } else {
-      setError('Invalid email or password');
+      localStorage.setItem('user', JSON.stringify(data.data.user));
+      localStorage.setItem('token', data.data.access_token);
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -39,7 +53,9 @@ export default function Login() {
               <Calendar className="w-8 h-8 text-purple-600" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">Welcome to Allora</h2>
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+            Welcome to Allora
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
             Please sign in to your account
           </p>
@@ -52,7 +68,10 @@ export default function Login() {
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <Input
@@ -68,7 +87,10 @@ export default function Login() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <Input
@@ -93,13 +115,19 @@ export default function Login() {
                 type="checkbox"
                 className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-900"
+              >
                 Remember me
               </label>
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
+              <a
+                href="#"
+                className="font-medium text-purple-600 hover:text-purple-500"
+              >
                 Forgot your password?
               </a>
             </div>
@@ -115,4 +143,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}

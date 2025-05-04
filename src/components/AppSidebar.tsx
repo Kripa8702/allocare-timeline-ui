@@ -23,6 +23,8 @@ export default function AppSidebar() {
 
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 

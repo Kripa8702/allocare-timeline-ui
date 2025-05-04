@@ -47,7 +47,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!allocationData || !allocationData.weeks.length) {
+  if (!allocationData?.weeks || !allocationData.weeks.length) {
     return (
       <div className="p-6">
         <Card className="bg-yellow-50 border-yellow-200">
@@ -251,22 +251,34 @@ export default function Dashboard() {
                       <span className="font-medium text-green-600">{employee.total_actual_hours}h</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-gray-500">Allocation: </span>
-                      <span className={`font-medium ${
-                        employee.percent_occupied > 100 ? 'text-red-600' :
-                        employee.percent_occupied === 100 ? 'text-green-600' :
-                        'text-yellow-600'
-                      }`}>
-                        {employee.percent_occupied}%
-                      </span>
+                      <span className="text-gray-500">Utilization: </span>
+                      <span className="font-medium text-blue-600">{employee.percent_occupied}%</span>
                     </div>
                   </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-purple-600 h-2 rounded-full" 
-                    style={{ width: `${employee.percent_occupied}%` }}
-                  ></div>
+                <div className="space-y-2">
+                  {employee.allocations.map((allocation) => (
+                    <div key={allocation.project_id} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: allocation.color_code }}
+                        />
+                        <span>{allocation.project_name}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-gray-500">
+                          {allocation.hours_allocated}h allocated
+                        </span>
+                        <span className="text-gray-500">
+                          {allocation.actual_hours}h actual
+                        </span>
+                        <span className="text-gray-500">
+                          {allocation.percent_allocated}% allocated
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AllocationData, fetchAllocations } from '@/services/allocationService';
+import { fetchAllocations } from '@/services/allocationService';
+import { Weeks } from '@/utils/mockData';
 
 interface AllocationContextType {
-  allocationData: AllocationData | null;
+  allocationData: Weeks | null;
   isLoading: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
@@ -11,7 +12,7 @@ interface AllocationContextType {
 const AllocationContext = createContext<AllocationContextType | undefined>(undefined);
 
 export const AllocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [allocationData, setAllocationData] = useState<AllocationData | null>(null);
+  const [allocationData, setAllocationData] = useState<Weeks | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
