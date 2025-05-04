@@ -10,15 +10,30 @@ const Allocation = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [calendarView, setCalendarView] = useState<CalendarView>("week");
   const [selectedWeek, setSelectedWeek] = useState<{ start: string; end: string } | null>(null);
+  const [selectedProject, setSelectedProject] = useState("all");
   const resetSelectedWeek = () => setSelectedWeek(null);
   const [isAddAllocationOpen, setIsAddAllocationOpen] = useState(false);
   
   const employees = mockEmployees;
   
-  // Filter employees based on search query
-  const filteredEmployees = employees.filter(employee => 
-    employee.employee_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter employees based on search query and project selection
+  const filteredEmployees = employees.filter(employee => {
+    const matchesSearch = employee.employee_name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (selectedProject === "all") return matchesSearch;
+    
+    // Check if employee has allocations for the selected project
+    const hasProjectAllocation = mockData.weeks.some(week => 
+      week.data.some(empData => 
+        empData.employee_id === employee.employee_id &&
+        empData.allocations.some(alloc => 
+          alloc.project_id.toString() === selectedProject
+        )
+      )
+    );
+    
+    return matchesSearch && hasProjectAllocation;
+  });
 
   const handleWeekClick = (weekStart: string, weekEnd: string) => {
     setSelectedWeek({ start: weekStart, end: weekEnd });
@@ -35,7 +50,6 @@ const Allocation = () => {
       resetSelectedWeek();
     }
   };
-
   
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50">
@@ -48,6 +62,8 @@ const Allocation = () => {
         setCalendarView={setCalendarView}
         employees={employees}
         projects={mockProjects}
+        selectedProject={selectedProject}
+        setSelectedProject={setSelectedProject}
         onAddAllocationOpen={handleAddAllocationOpen}
       />
       <div className="flex-1 p-4 overflow-auto">
@@ -56,6 +72,7 @@ const Allocation = () => {
             <AllocationTable 
               data={mockData}
               onWeekClick={handleWeekClick}
+              filteredEmployees={filteredEmployees}
             />
           ) : (
             <DayView 
@@ -68,8 +85,8 @@ const Allocation = () => {
 
       {/* Add Allocation Form */}
       <AddAllocationForm
-        employees={employees}
-        projects={mockProjects}
+        employees={employees || []}
+        projects={mockProjects || []}
         defaultStartDate={selectedWeek?.start}
         defaultEndDate={selectedWeek?.end}
         open={isAddAllocationOpen}

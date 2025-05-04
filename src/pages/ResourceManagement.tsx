@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { mockData, mockEmployees } from '@/utils/mockData';
 import { format, parseISO, addDays, startOfWeek, endOfMonth, startOfMonth, addMonths, addWeeks } from 'date-fns';
@@ -8,8 +8,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const ResourceManagement = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  
   // Get current week and future weeks
   const today = new Date();
   const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
@@ -43,13 +47,34 @@ const ResourceManagement = () => {
     };
   };
 
+  // Filter employees based on search query
+  const filteredEmployees = mockEmployees.filter(employee =>
+    employee.employee_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-6">
       <Card className="bg-white">
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-6">
-            Resource Allocation Heat Map - Next 24 Weeks
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">
+              Resource Allocation Heat Map - Next 24 Weeks
+            </h2>
+            
+            {/* Search Bar */}
+            <div className="relative w-[300px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                <Input 
+                  type="text"
+                  placeholder="Search employees..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 w-full bg-white border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+          </div>
           
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse table-fixed">
@@ -72,7 +97,7 @@ const ResourceManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockEmployees.map((employee) => (
+                {filteredEmployees.map((employee) => (
                   <tr key={employee.employee_id} className="border">
                     <td className="p-1 font-medium text-xs border-r truncate">
                       {employee.employee_name}
@@ -107,7 +132,7 @@ const ResourceManagement = () => {
           </div>
 
           {/* Legend */}
-          <div className="mt-6 flex flex-wrap gap-4 items-center">
+          <div className="mt-6 flex items-center gap-4">
             <div className="text-xs font-medium">Allocation Level:</div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-green-500"></div>

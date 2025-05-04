@@ -7,43 +7,38 @@ interface AllocationStatusProps {
   actualHours?: number;
 }
 
-const AllocationStatus: React.FC<AllocationStatusProps> = ({ 
-  percentage, 
+const AllocationStatus: React.FC<AllocationStatusProps> = ({
+  percentage,
   totalHours,
   actualPercentage,
-  actualHours 
+  actualHours
 }) => {
   const getStatusColor = (percent: number) => {
     if (percent > 100) return 'text-red-600';
     if (percent >= 95) return 'text-green-600';
-    if (percent >= 70) return 'text-blue-600';
-    if (percent >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (percent < 95) return 'text-yellow-600';
   };
 
   const getActualStatusColor = (planned: number, actual: number) => {
-    const difference = actual - planned;
-    if (actual > 100) return 'text-red-600';
-    if (Math.abs(difference) <= 10) return 'text-green-600';
-    if (difference > 10) return 'text-blue-600';
-    if (difference < -10) return 'text-red-600';
+    const difference = planned - actual;
+    if (difference <= 5 && difference >= -5) return 'text-green-600';
+    if (difference > 5) return 'text-blue-600';
+    if (difference < -5) return 'text-red-600';
     return 'text-gray-600';
   };
 
   const getLineColor = (percent: number) => {
     if (percent > 100) return 'bg-red-500';
     if (percent >= 95) return 'bg-green-500';
-    if (percent >= 70) return 'bg-blue-500';
-    if (percent >= 50) return 'bg-yellow-500';
+    if (percent < 95) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
   const getActualLineColor = (planned: number, actual: number) => {
-    const difference = actual - planned;
-    if (actual > 100) return 'bg-red-500';
-    if (Math.abs(difference) <= 10) return 'bg-green-500';
-    if (difference > 10) return 'bg-blue-500';
-    if (difference < -10) return 'bg-red-500';
+    const difference = planned - actual;
+    if (difference <= 5 && difference >= -5) return 'bg-green-500';
+    if (difference > 5) return 'bg-blue-500';
+    if (difference < -5) return 'bg-red-500';
     return 'bg-gray-500';
   };
 
@@ -58,7 +53,7 @@ const AllocationStatus: React.FC<AllocationStatusProps> = ({
           </span>
         </div>
         <div className="flex-1 relative h-1 bg-gray-100 rounded-full overflow-hidden">
-          <div 
+          <div
             className={`absolute h-full ${getLineColor(percentage)}`}
             style={{ width: `${percentage}%` }}
           />
@@ -76,13 +71,13 @@ const AllocationStatus: React.FC<AllocationStatusProps> = ({
             </span>
           </div>
           <div className="flex-1 relative h-1 bg-gray-100 rounded-full overflow-hidden">
-            <div 
+            <div
               className={`absolute h-full ${getActualLineColor(percentage, actualPercentage)}`}
               style={{ width: `${actualPercentage}%` }}
             />
             {/* Over-allocation indicator */}
             {actualPercentage > percentage && (
-              <div 
+              <div
                 className="absolute h-full w-0.5 bg-white"
                 style={{ left: `${percentage}%` }}
               />

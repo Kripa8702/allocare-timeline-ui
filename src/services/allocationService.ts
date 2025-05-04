@@ -24,7 +24,7 @@ export interface AllocationData {
 
 export const fetchAllocations = async (): Promise<AllocationData> => {
   const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const response = await fetch('http://127.0.0.1:8000/api/allocations', {
+  const response = await fetch('https://b3ef-103-240-207-253.ngrok-free.app/api/allocations', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',

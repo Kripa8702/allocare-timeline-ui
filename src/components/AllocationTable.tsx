@@ -7,9 +7,14 @@ import { addDays, startOfWeek, format, parseISO, isWithinInterval } from 'date-f
 interface AllocationTableProps {
   data: Weeks;
   onWeekClick?: (weekStart: string, weekEnd: string) => void;
+  filteredEmployees?: Employee[];
 }
 
-const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) => {
+const AllocationTable: React.FC<AllocationTableProps> = ({ 
+  data, 
+  onWeekClick,
+  filteredEmployees = mockEmployees 
+}) => {
   // Ensure we have data and at least one week
   if (!data?.weeks || data.weeks.length === 0) {
     return <div>No data available</div>;
@@ -62,14 +67,14 @@ const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) 
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
+      <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="p-2 border-r border-t border-l border-gray-200 min-w-[200px] align-top">Employee</th>
+            <th className="p-2 border border-gray-200 bg-gray-50 text-left">Employee</th>
             {weeks.map((weekDates, weekIndex) => (
               <th 
                 key={weekIndex} 
-                className="p-2 border-r border-t border-gray-200 min-w-[200px] align-top cursor-pointer hover:bg-gray-50"
+                className="p-2 border border-gray-200 bg-gray-50 text-center cursor-pointer hover:bg-gray-100"
                 onClick={() => handleCellClick(weekDates)}
               >
                 <div className="font-medium">
@@ -87,7 +92,7 @@ const AllocationTable: React.FC<AllocationTableProps> = ({ data, onWeekClick }) 
           </tr>
         </thead>
         <tbody>
-          {mockEmployees.map((employee) => (
+          {filteredEmployees.map((employee) => (
             <tr key={employee.employee_id}>
               <td className="p-2 border border-gray-200 min-w-[200px] align-top">
                 <div className="font-medium">{employee.employee_name}</div>

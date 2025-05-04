@@ -34,13 +34,21 @@ const App = () => (
       <Sonner />
       <AllocationProvider>
         <BrowserRouter>
-          <Layout>
-            <Routes>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route path="/" element={<Dashboard />} />
               <Route path="/allocation" element={<Allocation />} />
               <Route path="/resource-management" element={<ResourceManagement />} />
-            </Routes>
-          </Layout>
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
         </BrowserRouter>
       </AllocationProvider>
     </TooltipProvider>

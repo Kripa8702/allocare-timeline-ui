@@ -12,6 +12,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { useNavigate } from "react-router-dom";
 import { Employee, Project } from '@/utils/mockData';
 
@@ -26,6 +33,8 @@ interface TopBarProps {
   setCalendarView: (view: CalendarView) => void;
   employees: Employee[];
   projects: Project[];
+  selectedProject: string;
+  setSelectedProject: (project: string) => void;
   onAddAllocationOpen?: (open: boolean) => void;
 }
 
@@ -38,6 +47,8 @@ const TopBar: React.FC<TopBarProps> = ({
   setCalendarView,
   employees,
   projects,
+  selectedProject,
+  setSelectedProject,
   onAddAllocationOpen,
 }) => {
   const navigate = useNavigate();
@@ -50,17 +61,40 @@ const TopBar: React.FC<TopBarProps> = ({
   return (
     <div className="sticky top-0 z-10">
       <div className="flex items-center justify-between px-8 py-4">
-        {/* Center: Search Bar */}
-        <div className="relative w-[400px]">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-            <Input 
-              type="text"
-              placeholder="Search employees..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-full bg-white border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-            />
+        {/* Left: Search and Filter Section */}
+        <div className="flex items-center gap-4 flex-1">
+          {/* Search Bar */}
+          <div className="relative w-[300px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <Input 
+                type="text"
+                placeholder="Search employees..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full bg-white border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
+            </div>
+          </div>
+
+          {/* Project Filter */}
+          <div className="w-[200px]">
+            <Select
+              value={selectedProject}
+              onValueChange={setSelectedProject}
+            >
+              <SelectTrigger className="w-full bg-white border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                <SelectValue placeholder="Filter by project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.project_id} value={project.project_id.toString()}>
+                    {project.project_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -72,14 +106,6 @@ const TopBar: React.FC<TopBarProps> = ({
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Allocation
-          </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`bg-white border-gray-300 shadow-sm ${showFilters ? "bg-purple-50 border-purple-200 text-purple-700" : "hover:bg-purple-50 hover:text-purple-700"}`}
-          >
-            {showFilters ? <X className="h-4 w-4" /> : <Filter className="h-4 w-4" />}
           </Button>
         </div>
       </div>

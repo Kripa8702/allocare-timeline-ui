@@ -1,15 +1,23 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('isAuthenticated');
+    navigate('/login');
   };
 
   return (
@@ -55,13 +63,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
               </div>
             </div>
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign out
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
       <main className="max-w-[1920px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {children}
+        <Outlet />
       </main>
     </div>
   );

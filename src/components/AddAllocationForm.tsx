@@ -37,9 +37,9 @@ interface AddAllocationFormProps {
   trigger?: React.ReactNode;
 }
 
-const AddAllocationForm: React.FC<AddAllocationFormProps> = ({ 
-  employees, 
-  projects,
+const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
+  employees = [],
+  projects = [],
   defaultStartDate,
   defaultEndDate,
   open: controlledOpen,
@@ -69,8 +69,6 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
       end_date: defaultEndDate ? parseISO(defaultEndDate) : null,
     }));
   }, [defaultStartDate, defaultEndDate]);
-  
-
   // Check if all required fields are filled
   const isFormValid = () => {
     return (
@@ -84,11 +82,11 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isFormValid()) {
       return;
     }
-    
+
     // Format the data as required
     const allocationData = {
       employee_id: parseInt(formData.employee_id),
@@ -107,6 +105,14 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
       end_date: null,
     });
   };
+
+  const selectedEmployee = employees.find(
+    (employee) => employee.employee_id.toString() === formData.employee_id
+  );
+
+  const selectedProject = projects.find(
+    (project) => project.project_id.toString() === formData.project_id
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -129,9 +135,7 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
                   aria-expanded={employeeOpen}
                   className="w-full justify-between"
                 >
-                  {formData.employee_id
-                    ? employees.find((employee) => employee.employee_id.toString() === formData.employee_id)?.employee_name
-                    : "Select employee..."}
+                  {selectedEmployee?.employee_name || "Select employee..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -140,12 +144,11 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
                   <CommandInput placeholder="Search employee..." />
                   <CommandEmpty>No employee found.</CommandEmpty>
                   <CommandGroup>
-                    {employees.map((employee) => (
+                    {(employees || []).map((employee) => (
                       <CommandItem
                         key={employee.employee_id}
-                        value={employee.employee_name}
                         onSelect={() => {
-                          setFormData({ ...formData, employee_id: employee.employee_id.toString() });
+                          setFormData(prev => ({ ...prev, employee_id: employee.employee_id.toString() }));
                           setEmployeeOpen(false);
                         }}
                       >
@@ -159,6 +162,7 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
                       </CommandItem>
                     ))}
                   </CommandGroup>
+
                 </Command>
               </PopoverContent>
             </Popover>
@@ -174,9 +178,7 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
                   aria-expanded={projectOpen}
                   className="w-full justify-between"
                 >
-                  {formData.project_id
-                    ? projects.find((project) => project.project_id.toString() === formData.project_id)?.project_name
-                    : "Select project..."}
+                  {selectedProject?.project_name || "Select project..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -185,24 +187,30 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
                   <CommandInput placeholder="Search project..." />
                   <CommandEmpty>No project found.</CommandEmpty>
                   <CommandGroup>
-                    {projects.map((project) => (
-                      <CommandItem
-                        key={project.project_id}
-                        value={project.project_name}
-                        onSelect={() => {
-                          setFormData({ ...formData, project_id: project.project_id.toString() });
-                          setProjectOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            formData.project_id === project.project_id.toString() ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {project.project_name}
-                      </CommandItem>
-                    ))}
+                    {!projects || projects.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-gray-500">
+                        No projects available
+                      </div>
+                    ) : (
+                      projects.map((project) => (
+                        <CommandItem
+                          key={project.project_id}
+                          value={project.project_name}
+                          onSelect={() => {
+                            setFormData({ ...formData, project_id: project.project_id.toString() });
+                            setProjectOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              formData.project_id === project.project_id.toString() ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {project.project_name}
+                        </CommandItem>
+                      ))
+                    )}
                   </CommandGroup>
                 </Command>
               </PopoverContent>
@@ -272,8 +280,8 @@ const AddAllocationForm: React.FC<AddAllocationFormProps> = ({
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="bg-purple-600 hover:bg-purple-700"
               disabled={!isFormValid()}
             >
